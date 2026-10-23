@@ -1,0 +1,160 @@
+:root {
+  --accent: #d97757;
+  --ink: #1f1e1d;
+  --muted: #6b6a68;
+  --paper: #ffffff;
+  --line: #e7e3dc;
+  --ok: #3f9b62;
+  --warn: #e0892f;
+  --busy: #5b7fd6;
+  --field: #ffffff;   /* buttons and inputs */
+  --soft: #f5f3ef;    /* code, hovered rows */
+  --sel: #fbeee8;     /* picked answer */
+}
+body[data-theme="dark"] {
+  --ink: #f2f0ec; --muted: #a8a6a1; --paper: #2b2a28; --line: #45433f;
+  --field: #353330; --soft: #3a3835; --sel: #4d362c;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: transparent;
+  font: 13px/1.4 "Segoe UI", system-ui, sans-serif; color: var(--ink);
+  user-select: none;
+}
+.hidden { display: none !important; }
+
+/* ---------- pet ---------- */
+#pet {
+  position: absolute; bottom: 0; left: 50%; width: 120px; height: var(--pet-h, 266px);
+  transform: translateX(-50%);
+}
+#avatar {
+  position: absolute; bottom: 26px; left: 50%; height: 236px;
+  transform: translateX(-50%); transform-origin: 50% 100%;
+  cursor: grab; filter: drop-shadow(0 3px 4px rgba(0,0,0,.25));
+}
+#shadow {
+  position: absolute; bottom: 22px; left: 50%; width: 70px; height: 10px; margin-left: -35px;
+  border-radius: 50%; background: radial-gradient(rgba(0,0,0,.28), transparent 70%);
+}
+/* a picture character: CSS gives each state its own movement (translate/rotate/scale
+   compose with the centring transform above) */
+body.image #avatar { animation: breathe 3.2s ease-in-out infinite; }
+body.image[data-clip="thinking"] #avatar { animation: ponder 2.4s ease-in-out infinite; }
+body.image[data-clip="checking"] #avatar { animation: peer 1.8s ease-in-out infinite; }
+body.image[data-clip="running"] #avatar { animation: stroll 3s ease-in-out infinite, bob .5s ease-in-out infinite; }
+body.image[data-clip="waiting"] #avatar { animation: hop .9s ease-in-out infinite; }
+body.image[data-once="hello"] #avatar { animation: wave .35s ease-in-out 4; }
+body.image[data-once="done"] #avatar { animation: jump .6s ease-out 2; }
+body.image[data-once="error"] #avatar { animation: shake .1s linear 8; }
+@keyframes breathe { 50% { scale: 1 1.025; } }
+@keyframes ponder { 0%, 100% { rotate: -3deg; } 50% { rotate: 3deg; } }
+@keyframes peer { 0%, 100% { translate: -4px 0; rotate: -2deg; } 50% { translate: 4px 0; rotate: 2deg; } }
+@keyframes stroll { 0%, 100% { translate: -36px 0; } 50% { translate: 36px 0; } }
+@keyframes bob { 50% { margin-bottom: 4px; } }
+@keyframes hop { 0%, 100% { translate: 0 0; } 40% { translate: 0 -10px; } }
+@keyframes wave { 0%, 100% { rotate: 0deg; } 25% { rotate: -7deg; } 75% { rotate: 7deg; } }
+@keyframes jump { 0%, 100% { translate: 0 0; scale: 1 1; } 15% { scale: 1.06 .94; } 45% { translate: 0 -26px; scale: .96 1.04; } }
+@keyframes shake { 0%, 100% { translate: 0 0; } 25% { translate: -6px 0; } 75% { translate: 6px 0; } }
+
+/* a frames character carries its own motion; the stroll while running tools eases between frames */
+#avatar { transition: margin-left .1s linear; }
+
+/* thinking dots while working */
+#thought {
+  position: absolute; top: 2px; right: -14px; display: none; gap: 4px;
+  padding: 6px 9px; border-radius: 14px; background: var(--paper);
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+#thought::after {
+  content: ""; position: absolute; left: 6px; bottom: -6px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--paper); box-shadow: 0 2px 4px rgba(0,0,0,.12);
+}
+#thought span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: dot 1.2s infinite; }
+#thought span:nth-child(2) { animation-delay: .2s; }
+#thought span:nth-child(3) { animation-delay: .4s; }
+body[data-clip="thinking"] #thought { display: flex; }
+@keyframes dot { 0%, 60%, 100% { opacity: .25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+
+/* attention / done badge above the head */
+#badge {
+  position: absolute; top: 4px; left: 50%; margin-left: 30px; width: 28px; height: 28px; z-index: 2;
+  border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+}
+#badge.warn { background: var(--warn); animation: pulse 1s ease-in-out infinite; }
+#badge.ok { background: var(--ok); }
+@keyframes pulse { 50% { transform: scale(1.15); } }
+
+#sparkles { position: absolute; inset: 0; pointer-events: none; }
+#sparkles i {
+  position: absolute; width: 7px; height: 7px; border-radius: 2px; opacity: 0;
+  animation: confetti 1.4s ease-out forwards;
+}
+@keyframes confetti {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(260deg); }
+}
+
+/* status pill under the feet */
+#status {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: flex; align-items: center; gap: 6px; padding: 2px 10px 2px 8px;
+  border-radius: 999px; background: rgba(31,30,29,.82); color: #fff; font-size: 11px; cursor: pointer;
+}
+#status i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #9a9893; }
+body[data-state="working"] #status i { background: var(--busy); }
+body[data-state="waiting"] #status i { background: var(--warn); }
+body[data-state="done"] #status i { background: var(--ok); }
+#status span { overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- speech bubble ---------- */
+#bubble {
+  position: absolute; left: 8px; right: 8px; bottom: calc(var(--pet-h, 266px) + 8px);
+  max-height: calc(100vh - var(--pet-h, 266px) - 18px); overflow-y: auto;
+  padding: 12px 12px 10px; border-radius: 14px; background: var(--paper);
+  box-shadow: 0 6px 22px rgba(0,0,0,.22), 0 0 0 1px var(--line);
+  animation: pop .18s ease-out;
+}
+@keyframes pop { from { opacity: 0; transform: translateY(6px) scale(.97); } }
+#bubble .who { font-size: 11px; color: var(--muted); margin-bottom: 2px; display: flex; justify-content: space-between; gap: 8px; }
+#bubble .who b { color: var(--accent); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#bubble h4 { margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+#bubble code {
+  display: block; max-height: 64px; overflow: auto; margin: 0 0 8px; padding: 6px 8px; border-radius: 8px;
+  background: var(--soft); font: 11.5px/1.35 Consolas, monospace; white-space: pre-wrap; word-break: break-all;
+  user-select: text;
+}
+#bubble p { margin: 0 0 8px; color: var(--ink); }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+button {
+  font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--field); color: var(--ink);
+  border-radius: 8px; padding: 5px 10px; cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.primary:hover { filter: brightness(1.06); }
+button.danger:hover { border-color: #c4473a; color: #c4473a; }
+button.link { border: none; background: none; color: var(--muted); padding: 5px 4px; text-decoration: underline; }
+button.opt { text-align: left; }
+button.opt.sel { border-color: var(--accent); background: var(--sel); }
+button.opt small { display: block; color: var(--muted); font-size: 11px; }
+.q { margin-bottom: 8px; }
+.q .hdr { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+input[type=text] {
+  font: inherit; font-size: 12px; width: 100%; margin-top: 6px; padding: 5px 8px;
+  border: 1px solid var(--line); border-radius: 8px; outline: none; background: var(--field); color: var(--ink);
+}
+input[type=text]:focus { border-color: var(--accent); }
+.group { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 2px 0 2px; }
+.group ~ .group { margin-top: 8px; }
+.sess { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-top: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.sess:hover { background: var(--soft); }
+.sess:first-of-type { border-top: none; }
+.sess i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #9a9893; }
+.sess i.working { background: var(--busy); } .sess i.waiting { background: var(--warn); } .sess i.done { background: var(--ok); }
+.sess div { min-width: 0; }
+.sess b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sess span { display: block; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

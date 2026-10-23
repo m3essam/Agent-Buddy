@@ -1,0 +1,54 @@
+{
+  "name": "agent-buddy",
+  "productName": "Agent Buddy",
+  "version": "0.9.0",
+  "description": "A desktop companion for Claude Code",
+  "author": "Agent Buddy",
+  "license": "MIT",
+  "homepage": "https://github.com/m3essam/Agent-Buddy",
+  "repository": { "type": "git", "url": "https://github.com/m3essam/Agent-Buddy.git" },
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "icon": "electron tools/make-icon.js",
+    "dist": "electron-builder --win nsis",
+    "release": "electron-builder --win nsis --publish always"
+  },
+  "build": {
+    "appId": "io.github.m3essam.agentbuddy",
+    "productName": "Agent Buddy",
+    "publish": [{ "provider": "github", "owner": "m3essam", "repo": "Agent-Buddy", "releaseType": "release" }],
+    "files": [
+      "main.js",
+      "preload.js",
+      "settings-preload.js",
+      "install-hooks.js",
+      "renderer/**",
+      "assets/**",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "Agent-Buddy-Setup-${version}.${ext}",
+      "shortcutName": "Agent Buddy",
+      "deleteAppDataOnUninstall": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  }
+}

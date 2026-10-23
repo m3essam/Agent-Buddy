@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<title>Agent Buddy settings</title>
+<link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <header>
+    <h1>Agent Buddy</h1>
+    <p>A desktop companion for Claude Code</p>
+  </header>
+
+  <section>
+    <h2>Connection</h2>
+    <div class="row">
+      <div class="label"><b id="hooks-title"></b><span id="hooks-detail"></span></div>
+      <div class="actions"><button id="hooks-install" class="primary"></button><button id="hooks-remove" class="link">Disconnect</button></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Character</h2>
+    <div id="characters" class="choices" role="radiogroup" aria-label="Character"></div>
+    <div class="actions wrap">
+      <button id="new-picture">New from a picture…</button>
+      <button id="import">Import a folder…</button>
+      <button id="open-folder" class="link">Open characters folder</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Look</h2>
+    <label class="row">
+      <div class="label"><b>Size</b><span id="scale-value"></span></div>
+      <input type="range" id="scale" min="60" max="160" step="5">
+    </label>
+    <label class="row">
+      <div class="label"><b>Bubble theme</b></div>
+      <select id="theme"><option value="system">Match Windows</option><option value="light">Light</option><option value="dark">Dark</option></select>
+    </label>
+  </section>
+
+  <section>
+    <h2>Behaviour</h2>
+    <label class="row"><div class="label"><b>Show the buddy</b><span>Untick to keep it in the tray; it still pops up when Claude asks you something.</span></div><input type="checkbox" id="shown"></label>
+    <label class="row"><div class="label"><b>Quiet mode</b><span>Stay hidden until a session needs you or finishes.</span></div><input type="checkbox" data-setting="quiet"></label>
+    <label class="row"><div class="label"><b>Play a sound when Claude needs you</b></div><input type="checkbox" data-setting="sound"></label>
+    <label class="row"><div class="label"><b>Celebrate finished work with confetti</b></div><input type="checkbox" data-setting="confetti"></label>
+    <label class="row">
+      <div class="label"><b>Keep the “done” bubble for</b><span id="done-value"></span></div>
+      <input type="range" id="doneSeconds" min="3" max="30" step="1">
+    </label>
+    <div class="row"><div class="label"><b>Position</b><span>Drag the buddy to move it.</span></div><button id="reset-position">Put it back in the corner</button></div>
+  </section>
+
+  <section>
+    <h2>Answering from the bubble</h2>
+    <label class="row"><div class="label"><b>Answer Claude’s questions</b><span>Pick an option in the bubble instead of switching to Claude.</span></div><input type="checkbox" data-setting="answerQuestions"></label>
+    <label class="row"><div class="label"><b>Allow or deny commands and edits</b><span class="warn">This lets one click in the bubble approve what Claude runs on your computer. When it’s off, the buddy tells you Claude needs your OK and you answer in Claude.</span></div><input type="checkbox" data-setting="answerPermissions"></label>
+  </section>
+
+  <section>
+    <h2>Sessions</h2>
+    <label class="row"><div class="label"><b>Claude desktop app</b><span>Always followed.</span></div><input type="checkbox" checked disabled></label>
+    <label class="row"><div class="label"><b>Claude Code in a terminal or editor</b><span>Follow command-line and IDE sessions too. These can’t be opened from the buddy.</span></div><input type="checkbox" data-setting="watchCli"></label>
+  </section>
+
+  <section>
+    <h2>System</h2>
+    <label class="row"><div class="label"><b>Start with Windows</b></div><input type="checkbox" id="startWithWindows"></label>
+  </section>
+
+  <footer>Agent Buddy <span id="version"></span> · an independent project, not affiliated with Anthropic. Nothing leaves your computer.</footer>
+
+  <script src="settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: buddy:; style-src 'self' 'unsafe-inline'">
+<title>Agent Buddy</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-state="idle">
+  <div id="bubble" class="hit hidden"></div>
+
+  <div id="pet">
+    <div id="badge" class="hidden"></div>
+    <div id="thought"><span></span><span></span><span></span></div>
+    <div id="sparkles"></div>
+    <img id="avatar" class="hit" draggable="false" alt="">
+    <div id="shadow"></div>
+    <div id="status" class="hit"><i></i><span></span></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

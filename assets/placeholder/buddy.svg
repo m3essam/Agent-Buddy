@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 240" width="280" height="480">
+  <!-- antenna -->
+  <line x1="70" y1="30" x2="70" y2="12" stroke="#4a5868" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="70" cy="10" r="7" fill="#f2b84b"/>
+  <!-- head -->
+  <rect x="22" y="28" width="96" height="78" rx="30" fill="#5d7488"/>
+  <rect x="32" y="40" width="76" height="54" rx="22" fill="#eef3f7"/>
+  <circle cx="54" cy="64" r="7" fill="#26313c"/>
+  <circle cx="86" cy="64" r="7" fill="#26313c"/>
+  <circle cx="56.5" cy="61.5" r="2.2" fill="#fff"/>
+  <circle cx="88.5" cy="61.5" r="2.2" fill="#fff"/>
+  <path d="M58 80 Q70 89 82 80" fill="none" stroke="#26313c" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="44" cy="78" r="5" fill="#f4a3a0" opacity=".7"/>
+  <circle cx="96" cy="78" r="5" fill="#f4a3a0" opacity=".7"/>
+  <!-- arms -->
+  <rect x="12" y="122" width="16" height="50" rx="8" fill="#4a5868" transform="rotate(12 20 126)"/>
+  <rect x="112" y="122" width="16" height="50" rx="8" fill="#4a5868" transform="rotate(-12 120 126)"/>
+  <!-- body -->
+  <rect x="30" y="110" width="80" height="86" rx="26" fill="#5d7488"/>
+  <rect x="46" y="128" width="48" height="34" rx="10" fill="#eef3f7"/>
+  <circle cx="60" cy="145" r="5" fill="#6cc29a"/>
+  <circle cx="80" cy="145" r="5" fill="#f2b84b"/>
+  <!-- legs -->
+  <rect x="44" y="190" width="18" height="34" rx="9" fill="#4a5868"/>
+  <rect x="78" y="190" width="18" height="34" rx="9" fill="#4a5868"/>
+  <ellipse cx="53" cy="226" rx="15" ry="8" fill="#26313c"/>
+  <ellipse cx="87" cy="226" rx="15" ry="8" fill="#26313c"/>
+</svg>
