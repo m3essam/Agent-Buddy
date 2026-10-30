@@ -12,6 +12,9 @@ To share a character, zip its folder. Someone else can unzip it and use **Charac
 
 ## Making a good video
 
+**Using an AI video tool?** [video-prompt.md](video-prompt.md) has a ready-made prompt for Gemini (Veo), Seedance
+and similar tools, plus which move maps to which state.
+
 - **One character, filmed whole**, from head to feet, without walking out of the frame.
 - **Do each move one after another**, a few seconds each, roughly in this order:
   standing → thinking → looking something up → walking → waiting → waving → celebrating → a "whoops".

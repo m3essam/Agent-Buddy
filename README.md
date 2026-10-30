@@ -67,6 +67,8 @@ Agent Buddy ships with a placeholder robot. Make your own from **Character** in 
 
 1. Record or generate a short video (5–30 s) of your character doing a few moves one after another: standing,
    thinking, walking, waving, celebrating. A plain background works best.
+   **No camera needed:** give a photo and [this ready-made prompt](docs/video-prompt.md) to an AI video tool such
+   as Gemini (Veo), Seedance, Kling or Runway, and it makes a bobblehead version of you doing every move.
 2. **New character from a video…** → choose the video and how to remove the background:
    - **Plain colour** for a wall, a backdrop or a generated character on a flat colour;
    - **Green screen**;
