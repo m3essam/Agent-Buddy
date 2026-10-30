@@ -45,7 +45,15 @@ and similar tools, plus which move maps to which state.
    Name the character, choose its size, and **Save character**.
 
 **Edit clips…** (in the Character menu and in Settings) reopens step 2 for the active character, so you can
-re-time it without cutting it out again.
+re-time it without cutting it out again. It works on the built-in **Default buddy** too: your changes are saved in
+`~/.agent-buddy/config.json` (the app's own files stay untouched), and **Restore original** in the wizard undoes them.
+
+## Tray icon
+
+The tray icon is cut from the character's first idle frame. By default Agent Buddy finds the head on its own, from
+the top of the hair down to the neck. To choose the square yourself, go to **Settings → Character → Tray icon →
+Adjust…**, drag the square over the head, drag its corner to resize it, and **Save**. **Automatic** goes back to
+the head finder. Each character keeps its own crop.
 
 ## character.json
 

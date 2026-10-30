@@ -352,12 +352,20 @@ ipcMain.handle('get-state', () => snapshot());
 // The active one lives in ~/.agent-buddy/characters/<id>; with none chosen, the
 // built-in default character in assets/default is shown.
 
+// The built-in character's files can't be changed (they're inside the installed app), so "Edit clips"
+// on it saves the new clips and size in config.defaultEdit, laid over its character.json here.
 function readCharacter(dir) {
   try {
     const c = JSON.parse(fs.readFileSync(path.join(dir, 'character.json'), 'utf8'));
+    if (dir === DEFAULT_DIR && config.defaultEdit) Object.assign(c, config.defaultEdit);
     return c.kind === 'image' || c.kind === 'frames' ? c : null;
   } catch { return null; }
 }
+
+// Tray-icon crops ({ x, y, size }, see renderer/head.js) are kept per character in config.iconCrops;
+// the built-in one is under "default".
+const iconKey = () => (activeCharacterDir() === DEFAULT_DIR ? 'default' : config.character);
+const iconCrop = () => (config.iconCrops || {})[iconKey()] || null;
 
 function listCharacters() {
   return fs.readdirSync(CHARACTERS_DIR, { withFileTypes: true })
@@ -396,7 +404,25 @@ function serveCharacterFiles() {
   });
 }
 
-ipcMain.handle('character', () => ({ ...readCharacter(activeCharacterDir()), base: 'buddy://character/' }));
+ipcMain.handle('character', () => ({ ...readCharacter(activeCharacterDir()), base: 'buddy://character/', icon: iconCrop() }));
+
+// The frame the tray icon is cut from: the first idle frame, or the picture.
+function iconSource() {
+  const c = readCharacter(activeCharacterDir());
+  if (!c) return null;
+  if (c.kind === 'image') return 'buddy://character/' + c.image;
+  const digits = (c.frames.file.match(/#+/) || ['###'])[0], first = c.clips?.idle?.frames?.[0] ?? 0;
+  return 'buddy://character/' + c.frames.file.replace(digits, String(first).padStart(digits.length, '0'));
+}
+
+function setIconCrop(crop) {
+  config.iconCrops = config.iconCrops || {};
+  const ok = crop && [crop.x, crop.y, crop.size].every((n) => typeof n === 'number' && n >= 0 && n <= 1) && crop.size > 0.02;
+  if (ok) config.iconCrops[iconKey()] = { x: crop.x, y: crop.y, size: crop.size };
+  else delete config.iconCrops[iconKey()]; // back to the automatic head crop
+  saveConfig();
+  if (win && !win.isDestroyed()) win.webContents.reload(); // redraws the tray icon
+}
 
 function useCharacter(id) {
   config.character = id; saveConfig();
@@ -461,8 +487,17 @@ function openWizard(mode) {
 }
 
 ipcMain.handle('wizard:init', () => (wizardMode === 'edit'
-  ? { mode: 'edit', character: { ...readCharacter(activeCharacterDir()), base: 'buddy://character/' } }
+  ? { mode: 'edit', builtIn: activeCharacterDir() === DEFAULT_DIR, edited: !!config.defaultEdit,
+    character: { ...readCharacter(activeCharacterDir()), base: 'buddy://character/' } }
   : { mode: 'new' }));
+
+// "Restore original" for the built-in character: drop the saved edits.
+ipcMain.handle('wizard:reset-default', () => {
+  delete config.defaultEdit; saveConfig();
+  useCharacter(null);
+  if (wizardWin && !wizardWin.isDestroyed()) wizardWin.close();
+  return true;
+});
 
 ipcMain.handle('wizard:pick-video', async () => {
   // Source runs: AGENT_BUDDY_TEST_VIDEO skips the dialog, for trying the wizard repeatedly.
@@ -490,7 +525,12 @@ ipcMain.handle('wizard:save', async (_e, { character, frames }) => {
     fs.mkdirSync(path.join(dir, 'frames'), { recursive: true });
     await Promise.all(frames.map((buf, i) => fs.promises.writeFile(path.join(dir, 'frames', `f${String(i).padStart(3, '0')}.webp`), Buffer.from(buf))));
     character.frames = { ...character.frames, count: frames.length, file: 'frames/f###.webp' };
-  } else if (dir === DEFAULT_DIR) return false;
+  } else if (dir === DEFAULT_DIR) {
+    config.defaultEdit = { clips: character.clips, height: character.height }; saveConfig();
+    useCharacter(null);
+    if (wizardWin && !wizardWin.isDestroyed()) wizardWin.close();
+    return true;
+  }
   const prev = readCharacter(dir) || {};
   fs.writeFileSync(path.join(dir, 'character.json'), JSON.stringify({ ...prev, ...character, kind: 'frames' }, null, 2));
   useCharacter(id);
@@ -688,7 +728,7 @@ function characterMenu() {
     { type: 'separator' },
     { label: 'New character from a video…', click: () => openWizard('new') },
     { label: 'New character from a picture…', click: () => newCharacterFromImage() },
-    { label: 'Edit clips…', enabled: readCharacter(active)?.kind === 'frames' && active !== DEFAULT_DIR, click: () => openWizard('edit') },
+    { label: 'Edit clips…', enabled: readCharacter(active)?.kind === 'frames', click: () => openWizard('edit') },
     { label: 'Import a character folder…', click: () => importCharacter() },
     { label: 'Open characters folder', click: () => shell.openPath(CHARACTERS_DIR) },
   ];
@@ -728,8 +768,10 @@ function rebuildTray() {
 function settingsState() {
   return {
     settings: settings(),
-    characters: [{ id: null, name: 'Default buddy' }, ...(devDemoOnly ? [] : listCharacters()).map((c) => ({ id: c.id, name: c.info.name || c.id, kind: c.info.kind }))],
+    characters: [{ id: null, name: 'Default buddy', kind: readCharacter(DEFAULT_DIR)?.kind, builtIn: true },
+      ...(devDemoOnly ? [] : listCharacters()).map((c) => ({ id: c.id, name: c.info.name || c.id, kind: c.info.kind }))],
     character: activeCharacterDir() === DEFAULT_DIR ? null : config.character,
+    icon: { src: iconSource(), crop: iconCrop() },
     shown: !config.hidden,
     startWithWindows: startsWithWindows(),
     hooks: hooks.status(token),
@@ -754,6 +796,7 @@ const SETTINGS_ACTIONS = {
   newFromPicture: () => newCharacterFromImage(),
   newFromVideo: () => openWizard('new'),
   editClips: () => openWizard('edit'),
+  iconCrop: (crop) => setIconCrop(crop),
   importCharacter: () => importCharacter(),
   openCharacters: () => shell.openPath(CHARACTERS_DIR),
   shown: (on) => setVisible(!!on),

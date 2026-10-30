@@ -1,7 +1,7 @@
 {
   "name": "agent-buddy",
   "productName": "Agent Buddy",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "A desktop companion for Claude Code: your own animated character shows what your sessions are doing",
   "author": "m3essam",
   "license": "MIT",

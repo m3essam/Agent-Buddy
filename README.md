@@ -97,7 +97,8 @@ A character is just a folder in `~/.agent-buddy/characters/`. Zip it and share i
 Open them from the tray menu or by right-clicking the buddy (**Settings…**). They also open on first run.
 
 - **Connection:** connect or disconnect the Claude Code hooks
-- **Character:** pick, create, import or edit a character
+- **Character:** pick, create, import or edit a character (including the built-in one), and choose which part of it
+  appears as the tray icon
 - **Look:** size (60–160%) and bubble theme
 - **Behaviour:** show or hide the buddy, quiet mode, chime, confetti, how long the "done" bubble stays, reset position
 - **Answering from the bubble:** questions (terminal sessions) and permissions (off by default)

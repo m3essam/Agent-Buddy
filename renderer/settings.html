@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' buddy: data:; style-src 'self' 'unsafe-inline'">
 <title>Agent Buddy settings</title>
 <link rel="stylesheet" href="settings.css">
 </head>
@@ -30,7 +30,24 @@
       <button id="import">Import a folder…</button>
       <button id="open-folder" class="link">Open characters folder</button>
     </div>
+    <div class="row">
+      <div class="label"><b>Tray icon</b><span>The part of your character shown in the taskbar tray.</span></div>
+      <div class="actions"><canvas id="icon-preview" class="icon" width="64" height="64"></canvas><button id="icon-adjust">Adjust…</button></div>
+    </div>
   </section>
+
+  <dialog id="crop">
+    <h2>Tray icon</h2>
+    <p>Drag the square over your character's head, and drag its corner to resize it.</p>
+    <div id="crop-stage"><img id="crop-img" alt="" draggable="false"><div id="crop-box"><span id="crop-corner"></span></div></div>
+    <div class="crop-foot">
+      <canvas id="crop-preview" class="icon" width="64" height="64"></canvas>
+      <button id="crop-auto" class="link">Automatic</button>
+      <span class="grow"></span>
+      <button id="crop-cancel">Cancel</button>
+      <button id="crop-save" class="primary" autofocus>Save</button>
+    </div>
+  </dialog>
 
   <section>
     <h2>Look</h2>
@@ -76,6 +93,7 @@
 
   <footer>Agent Buddy <span id="version"></span> · an independent project, not affiliated with Anthropic. Nothing leaves your computer.</footer>
 
+  <script src="head.js"></script>
   <script src="settings.js"></script>
 </body>
 </html>

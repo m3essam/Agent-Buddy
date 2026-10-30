@@ -86,30 +86,12 @@ function tick() {
   avatar.style.marginLeft = step.offset + 'px';
 }
 
-// Tray icon: a square around the character's head, found from the top of the opaque pixels.
+// Tray icon: the crop chosen in Settings, or else a square around the character's head (head.js).
 function drawTrayIcon(src) {
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
-    const w = img.naturalWidth || 256, h = img.naturalHeight || 256;
-    const c = Object.assign(document.createElement('canvas'), { width: w, height: h });
-    const g = c.getContext('2d', { willReadFrequently: true });
-    g.drawImage(img, 0, 0, w, h);
-    let px;
-    try { px = g.getImageData(0, 0, w, h).data; } catch { return; }
-    const opaque = (x, y) => px[(y * w + x) * 4 + 3] > 40;
-    let top = 0;
-    while (top < h && ![...Array(w).keys()].some((x) => opaque(x, top))) top++;
-    let minX = w, maxX = 0;
-    for (let y = top; y < Math.min(h, top + h * 0.2); y++) for (let x = 0; x < w; x++) if (opaque(x, y)) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); }
-    if (maxX < minX) { minX = 0; maxX = w - 1; top = 0; }
-    const side = Math.min(w, h, Math.max(maxX - minX, h * 0.18) * 1.15);
-    const sx = Math.max(0, Math.min(w - side, (minX + maxX) / 2 - side / 2)), sy = Math.max(0, top - side * 0.04);
-    const out = Object.assign(document.createElement('canvas'), { width: 64, height: 64 });
-    const o = out.getContext('2d');
-    o.imageSmoothingQuality = 'high';
-    o.drawImage(c, sx, sy, side, side, 0, 0, 64, 64);
-    window.pet.trayIcon(out.toDataURL('image/png'));
+    try { window.pet.trayIcon(drawCrop(img, character.icon || findHead(img)).toDataURL('image/png')); } catch {}
   };
   img.src = src;
 }

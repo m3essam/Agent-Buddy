@@ -34,6 +34,8 @@ button:hover:not(:disabled) { border-color: var(--accent); }
 button:disabled { opacity: .5; cursor: default; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.link { border: none; background: none; color: var(--muted); text-decoration: underline; padding: 6px 4px; }
+input:disabled { opacity: .6; }
 input[type=range], input[type=radio], input[type=checkbox] { accent-color: var(--accent); }
 
 .checker {

@@ -373,6 +373,12 @@ window.wizard.init().then((init) => {
   clips = JSON.parse(JSON.stringify(editCharacter.clips || {}));
   if (!clips.idle) clips.idle = { frames: [0, f.count - 1], mode: 'loop' };
   $('#name').value = editCharacter.name || '';
+  // the built-in character keeps its name; its edits can be undone
+  $('#name').disabled = init.builtIn;
+  if (init.builtIn) document.title = $('#title').textContent = 'Edit clips: Default buddy';
+  $('#restore').hidden = !(init.builtIn && init.edited);
   $('#height').value = editCharacter.height || 220; $('#height').oninput();
   openStates();
 });
+
+$('#restore').onclick = () => window.wizard.resetDefault();
