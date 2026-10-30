@@ -1,32 +1,48 @@
 {
   "name": "agent-buddy",
   "productName": "Agent Buddy",
-  "version": "0.9.0",
-  "description": "A desktop companion for Claude Code",
-  "author": "Agent Buddy",
+  "version": "0.10.0",
+  "description": "A desktop companion for Claude Code: your own animated character shows what your sessions are doing",
+  "author": "m3essam",
   "license": "MIT",
   "homepage": "https://github.com/m3essam/Agent-Buddy",
-  "repository": { "type": "git", "url": "https://github.com/m3essam/Agent-Buddy.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/m3essam/Agent-Buddy.git"
+  },
   "private": true,
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "icon": "electron tools/make-icon.js",
     "dist": "electron-builder --win nsis",
-    "release": "electron-builder --win nsis --publish always"
+    "release": "electron-builder --win nsis --publish always",
+    "demo": "node tools/demo.js"
   },
   "build": {
     "appId": "io.github.m3essam.agentbuddy",
     "productName": "Agent Buddy",
-    "publish": [{ "provider": "github", "owner": "m3essam", "repo": "Agent-Buddy", "releaseType": "release" }],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "m3essam",
+        "repo": "Agent-Buddy",
+        "releaseType": "release"
+      }
+    ],
     "files": [
       "main.js",
       "preload.js",
       "settings-preload.js",
+      "wizard-preload.js",
       "install-hooks.js",
       "renderer/**",
       "assets/**",
-      "package.json"
+      "package.json",
+      "!node_modules/@mediapipe/tasks-vision/wasm/vision_wasm_module_internal.*",
+      "!node_modules/@mediapipe/tasks-vision/wasm/vision_wasm_nosimd_internal.*",
+      "!node_modules/@mediapipe/tasks-vision/*.map",
+      "!node_modules/@mediapipe/tasks-vision/vision_bundle.{js,cjs}"
     ],
     "directories": {
       "output": "dist",
@@ -49,6 +65,7 @@
     "electron-builder": "^26.15.3"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "1.1.1",
     "electron-updater": "^6.8.9"
   }
 }

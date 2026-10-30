@@ -142,6 +142,7 @@ button.opt { text-align: left; }
 button.opt.sel { border-color: var(--accent); background: var(--sel); }
 button.opt small { display: block; color: var(--muted); font-size: 11px; }
 .q { margin-bottom: 8px; }
+.q ul.opts { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
 .q .hdr { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 input[type=text] {
   font: inherit; font-size: 12px; width: 100%; margin-top: 6px; padding: 5px 8px;
@@ -150,11 +151,15 @@ input[type=text] {
 input[type=text]:focus { border-color: var(--accent); }
 .group { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 2px 0 2px; }
 .group ~ .group { margin-top: 8px; }
+.group { display: flex; justify-content: space-between; align-items: center; }
+.group button.link { font-size: 10.5px; text-transform: none; letter-spacing: 0; padding: 0 2px; }
 .sess { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-top: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
 .sess:hover { background: var(--soft); }
 .sess:first-of-type { border-top: none; }
 .sess i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #9a9893; }
 .sess i.working { background: var(--busy); } .sess i.waiting { background: var(--warn); } .sess i.done { background: var(--ok); }
-.sess div { min-width: 0; }
+.sess div { min-width: 0; flex: 1; }
+.sess button.x { flex: none; width: 22px; height: 22px; padding: 0; border: none; background: none; color: var(--muted); font-size: 16px; line-height: 1; border-radius: 6px; }
+.sess button.x:hover { background: var(--line); color: var(--ink); }
 .sess b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sess span { display: block; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

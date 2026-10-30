@@ -24,7 +24,9 @@
     <h2>Character</h2>
     <div id="characters" class="choices" role="radiogroup" aria-label="Character"></div>
     <div class="actions wrap">
+      <button id="new-video" class="primary">New from a video…</button>
       <button id="new-picture">New from a picture…</button>
+      <button id="edit-clips" hidden>Edit clips…</button>
       <button id="import">Import a folder…</button>
       <button id="open-folder" class="link">Open characters folder</button>
     </div>
@@ -57,7 +59,7 @@
 
   <section>
     <h2>Answering from the bubble</h2>
-    <label class="row"><div class="label"><b>Answer Claude’s questions</b><span>Pick an option in the bubble instead of switching to Claude.</span></div><input type="checkbox" data-setting="answerQuestions"></label>
+    <label class="row"><div class="label"><b>Answer Claude’s questions in terminal sessions</b><span>Pick an option in the bubble instead of switching to the terminal. Questions from the Claude desktop app always appear in Claude and in the bubble at the same time; you answer them in Claude.</span></div><input type="checkbox" data-setting="answerQuestions"></label>
     <label class="row"><div class="label"><b>Allow or deny commands and edits</b><span class="warn">This lets one click in the bubble approve what Claude runs on your computer. When it’s off, the buddy tells you Claude needs your OK and you answer in Claude.</span></div><input type="checkbox" data-setting="answerPermissions"></label>
   </section>
 

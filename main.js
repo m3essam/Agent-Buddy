@@ -109,12 +109,13 @@ function handleEvent(ev) {
       s.state = 'idle'; s.detail = 'Ready';
       if (ev.source === 'startup') effect('hello');
       break;
-    case 'UserPromptSubmit': s.state = 'working'; s.unread = false; s.activity = 'thinking'; s.detail = 'Thinking'; break;
+    case 'UserPromptSubmit': cancelPendingFor(ev.session_id); s.state = 'working'; s.unread = false; s.activity = 'thinking'; s.detail = 'Thinking'; break;
     case 'PreToolUse': s.state = 'working'; s.activity = activityFor(ev.tool_name); s.detail = toolLabel(ev.tool_name); break;
     case 'PostToolUse':
     case 'PostToolUseFailure':
       // a tool ran, so any bubble still asking about this session was answered elsewhere
       cancelPendingFor(ev.session_id);
+      if (ev.tool_name === 'AskUserQuestion') s.state = 'working'; // answered in Claude, even if the mirror was dismissed
       if (s.state !== 'waiting') { s.state = 'working'; s.activity = 'thinking'; s.detail = 'Thinking'; }
       if (name === 'PostToolUseFailure' && !ev.is_interrupt) { s.detail = 'That didn’t work, retrying'; effect('error'); }
       break;
@@ -155,9 +156,9 @@ function settle(id, result) {
   if (!p) return;
   pending.delete(id);
   clearTimeout(p.timer);
-  p.resolve(result);
+  if (p.resolve) p.resolve(result);
   const s = sessions.get(p.sessionId);
-  if (s && s.state === 'waiting' && !hasPendingFor(s.id)) { s.state = 'working'; s.detail = 'Thinking'; }
+  if (s && s.state === 'waiting' && !p.dismissed && !hasPendingFor(s.id)) { s.state = 'working'; s.detail = 'Thinking'; }
   broadcast();
 }
 
@@ -172,6 +173,19 @@ function addPending(kind, ev) {
     broadcast();
     effect('hello');
   });
+}
+
+// A question Claude is asking in its own dialog: shown in the bubble too, answered only in Claude.
+// It goes away once that session moves on (the tool ran, the turn ended, or a new prompt).
+function mirrorQuestion(ev) {
+  const s = sessionFor(ev);
+  cancelPendingFor(s.id);
+  s.state = 'waiting';
+  s.detail = 'Has a question for you in Claude';
+  const id = crypto.randomUUID();
+  pending.set(id, { id, kind: 'mirror', sessionId: s.id, payload: ev, createdAt: Date.now() });
+  broadcast();
+  effect('hello');
 }
 
 // Short human summary of what a tool wants to do.
@@ -212,6 +226,12 @@ http.createServer(async (req, res) => {
     }
     if (name === 'PreToolUse' && ev.tool_name === 'AskUserQuestion') {
       handleEvent(ev);
+      // The desktop app shows its own question dialog even when a hook supplies the answers, so
+      // holding the hook only delays that dialog. Let Claude ask right away and mirror the question.
+      if (req.headers['x-entrypoint'] === 'claude-desktop') {
+        mirrorQuestion(ev);
+        return reply(200, {});
+      }
       const r = await ask('question', ev, res);
       if (r && r.answers) {
         return reply(200, { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'allow',
@@ -223,8 +243,55 @@ http.createServer(async (req, res) => {
     return reply(200, {});
   }
 
+  // Source runs only: screenshots and a click on the pet for tools/demo.js.
+  if (!app.isPackaged && req.url === '/dev/capture') {
+    const png = await devCapture(ev.target);
+    if (!png) return reply(404, { error: 'that window is not open' });
+    res.writeHead(200, { 'Content-Type': 'image/png' });
+    return res.end(png);
+  }
+  if (!app.isPackaged && req.url === '/dev/toggle-list') {
+    win.webContents.executeJavaScript('onPetClick()').catch(() => {});
+    return reply(200, {});
+  }
+  if (!app.isPackaged && req.url === '/dev/demo-only') {
+    devDemoOnly = !!ev.on;
+    broadcast();
+    return reply(200, {});
+  }
+  if (!app.isPackaged && req.url === '/dev/wizard') {
+    openWizard(ev.mode || 'new');
+    return reply(200, {});
+  }
+  if (!app.isPackaged && req.url === '/dev/eval') {
+    const w = { pet: win, settings: settingsWin, wizard: wizardWin }[ev.target];
+    if (!w || w.isDestroyed()) return reply(404, { error: 'that window is not open' });
+    try { return reply(200, { result: await w.webContents.executeJavaScript(ev.js) }); }
+    catch (e) { return reply(200, { error: String(e) }); }
+  }
+
   reply(404, {});
 }).listen(PORT, '127.0.0.1');
+
+// The pet window is mostly transparent: its capture is cropped to what's drawn.
+async function devCapture(target = 'pet') {
+  if (target === 'settings' && !(settingsWin && !settingsWin.isDestroyed())) {
+    openSettings();
+    await new Promise((r) => settingsWin.once('ready-to-show', () => setTimeout(r, 600)));
+  }
+  const w = { pet: win, settings: settingsWin, wizard: wizardWin }[target];
+  if (!w || w.isDestroyed()) return null;
+  const img = await w.webContents.capturePage();
+  if (target !== 'pet') return img.toPNG();
+  const { width: W, height: H } = img.getSize(), px = img.toBitmap(), PAD = 8;
+  let top = H;
+  for (let y = 0; y < H && top === H; y++) for (let x = 0; x < W; x++) if (px[(y * W + x) * 4 + 3] > 8) { top = y; break; }
+  const y = Math.max(0, top - PAD);
+  return img.crop({ x: 0, y, width: W, height: H - y }).toPNG();
+}
+
+// Source runs: while tools/demo.js takes screenshots, show only its made-up sessions.
+let devDemoOnly = false;
 
 // Wait for the user's answer in the bubble; null means "let Claude ask as usual".
 async function ask(kind, ev, res) {
@@ -246,13 +313,13 @@ async function ask(kind, ev, res) {
 
 function snapshot() {
   return {
-    sessions: [...sessions.values()].sort((a, b) => b.updatedAt - a.updatedAt),
-    pending: [...pending.values()].sort((a, b) => a.createdAt - b.createdAt).map(p => ({
+    sessions: [...sessions.values()].filter((s) => !devDemoOnly || s.id.startsWith('demo-')).sort((a, b) => b.updatedAt - a.updatedAt),
+    pending: [...pending.values()].filter((p) => !devDemoOnly || p.sessionId.startsWith('demo-')).sort((a, b) => a.createdAt - b.createdAt).map(p => ({
       id: p.id, kind: p.kind, sessionId: p.sessionId,
       sessionTitle: sessions.get(p.sessionId)?.title || '',
       toolName: p.payload.tool_name,
       summary: p.kind === 'permission' ? describeTool(p.payload) : '',
-      questions: p.kind === 'question' ? (p.payload.tool_input?.questions || []) : [],
+      questions: p.kind === 'permission' ? [] : (p.payload.tool_input?.questions || []),
     })),
   };
 }
@@ -305,11 +372,23 @@ function activeCharacterDir() {
 }
 
 // Character files are served as buddy://character/<file> from the active folder only.
+// buddy://app/<file> serves the video wizard and its background-removal model: a real origin
+// lets it fetch the model's wasm, which file:// pages cannot.
 protocol.registerSchemesAsPrivileged([{ scheme: 'buddy', privileges: { standard: true, secure: true, corsEnabled: true, supportFetchAPI: true } }]);
+const APP_FILES = ['renderer/', 'assets/vision/', 'node_modules/@mediapipe/tasks-vision/'];
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.tflite': 'application/octet-stream' };
 function serveCharacterFiles() {
   protocol.handle('buddy', async (req) => {
+    const url = new URL(req.url), rel = decodeURIComponent(url.pathname).replace(/^\/+/, '');
+    if (url.host === 'app') {
+      const file = path.resolve(__dirname, rel), inApp = path.relative(__dirname, file).split(path.sep).join('/');
+      if (!APP_FILES.some((p) => inApp.startsWith(p))) return new Response('', { status: 403 });
+      // fs reads inside the packaged app.asar too
+      try { return new Response(await fs.promises.readFile(file), { headers: { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' } }); }
+      catch { return new Response('', { status: 404 }); }
+    }
     const dir = activeCharacterDir();
-    const file = path.resolve(dir, decodeURIComponent(new URL(req.url).pathname).replace(/^\/+/, ''));
+    const file = path.resolve(dir, rel);
     if (!file.startsWith(dir + path.sep)) return new Response('', { status: 403 });
     const res = await net.fetch(pathToFileURL(file).href);
     // CORS lets the renderer read pixels back (to draw the tray icon from the character)
@@ -358,6 +437,67 @@ async function newCharacterFromImage() {
   useCharacter(id);
 }
 
+// ---------- video wizard ----------
+// One video becomes a frames character: the wizard cuts the figure out frame by frame, then you
+// mark which frames play for each state. "Edit clips" reopens the marking step for the active one.
+
+let wizardWin = null, wizardMode = 'new';
+const MAX_VIDEO_BYTES = 500 * 1024 * 1024;
+
+function openWizard(mode) {
+  if (mode === 'edit' && readCharacter(activeCharacterDir())?.kind !== 'frames') return;
+  if (wizardWin && !wizardWin.isDestroyed()) wizardWin.close();
+  wizardMode = mode;
+  const w = wizardWin = new BrowserWindow({
+    width: 980, height: 760, minWidth: 760, minHeight: 600, title: mode === 'edit' ? 'Edit clips' : 'New character from a video',
+    icon: trayIconImage || undefined, autoHideMenuBar: true, show: false, backgroundColor: '#f7f6f3',
+    webPreferences: { preload: path.join(__dirname, 'wizard-preload.js'), contextIsolation: true, nodeIntegration: false },
+  });
+  w.setMenu(null);
+  w.loadURL('buddy://app/renderer/video-wizard.html');
+  w.once('ready-to-show', () => w.show());
+  // a replaced wizard closes after the new one opens; only forget the window that is closing
+  w.on('closed', () => { if (wizardWin === w) wizardWin = null; });
+}
+
+ipcMain.handle('wizard:init', () => (wizardMode === 'edit'
+  ? { mode: 'edit', character: { ...readCharacter(activeCharacterDir()), base: 'buddy://character/' } }
+  : { mode: 'new' }));
+
+ipcMain.handle('wizard:pick-video', async () => {
+  // Source runs: AGENT_BUDDY_TEST_VIDEO skips the dialog, for trying the wizard repeatedly.
+  const r = !app.isPackaged && process.env.AGENT_BUDDY_TEST_VIDEO
+    ? { filePaths: [process.env.AGENT_BUDDY_TEST_VIDEO] }
+    : await dialog.showOpenDialog(wizardWin, {
+      title: 'Choose a video of your character',
+      filters: [{ name: 'Videos', extensions: ['mp4', 'mov', 'webm', 'mkv', 'm4v'] }],
+      properties: ['openFile'],
+    });
+  if (r.canceled || !r.filePaths[0]) return null;
+  const file = r.filePaths[0], size = fs.statSync(file).size;
+  if (size > MAX_VIDEO_BYTES) return { error: 'That video is over 500 MB. Trim it to the part with your character first.' };
+  const ext = path.extname(file).slice(1).toLowerCase();
+  const type = { mov: 'video/quicktime', webm: 'video/webm', mkv: 'video/x-matroska' }[ext] || 'video/mp4';
+  return { name: path.basename(file, path.extname(file)), type, bytes: await fs.promises.readFile(file) };
+});
+
+// New: frames is a list of webp files (as bytes). Edit: frames is null and only character.json changes.
+ipcMain.handle('wizard:save', async (_e, { character, frames }) => {
+  let dir = activeCharacterDir(), id = config.character;
+  if (frames) {
+    id = slugify(character.name || 'character');
+    dir = path.join(CHARACTERS_DIR, id);
+    fs.mkdirSync(path.join(dir, 'frames'), { recursive: true });
+    await Promise.all(frames.map((buf, i) => fs.promises.writeFile(path.join(dir, 'frames', `f${String(i).padStart(3, '0')}.webp`), Buffer.from(buf))));
+    character.frames = { ...character.frames, count: frames.length, file: 'frames/f###.webp' };
+  } else if (dir === PLACEHOLDER_DIR) return false;
+  const prev = readCharacter(dir) || {};
+  fs.writeFileSync(path.join(dir, 'character.json'), JSON.stringify({ ...prev, ...character, kind: 'frames' }, null, 2));
+  useCharacter(id);
+  if (wizardWin && !wizardWin.isDestroyed()) wizardWin.close();
+  return true;
+});
+
 // A shared character: a folder that holds character.json and its files.
 async function importCharacter() {
   const r = await dialog.showOpenDialog({ title: 'Choose a character folder (it holds character.json)', properties: ['openDirectory'] });
@@ -390,6 +530,7 @@ ipcMain.on('answer', (_e, { id, answer }) => {
   if (answer.type === 'allow') settle(id, { behavior: 'allow' });
   else if (answer.type === 'deny') settle(id, { behavior: 'deny', message: 'Denied from Agent Buddy' });
   else if (answer.type === 'answers') settle(id, { answers: answer.answers });
+  else if (answer.type === 'dismiss') { p.dismissed = true; settle(id, null); } // a mirrored question: hide it, Claude still asks
   else { const sid = p.sessionId; settle(id, null); openSession(sid); } // "Open Claude": fall back to the normal dialog
 });
 
@@ -545,7 +686,9 @@ function characterMenu() {
     pick(null, 'Default buddy', PLACEHOLDER_DIR),
     ...listCharacters().map((c) => pick(c.id, c.info.name || c.id, path.join(CHARACTERS_DIR, c.id))),
     { type: 'separator' },
+    { label: 'New character from a video…', click: () => openWizard('new') },
     { label: 'New character from a picture…', click: () => newCharacterFromImage() },
+    { label: 'Edit clips…', enabled: readCharacter(active)?.kind === 'frames' && active !== PLACEHOLDER_DIR, click: () => openWizard('edit') },
     { label: 'Import a character folder…', click: () => importCharacter() },
     { label: 'Open characters folder', click: () => shell.openPath(CHARACTERS_DIR) },
   ];
@@ -609,6 +752,8 @@ function setSetting(key, value) {
 const SETTINGS_ACTIONS = {
   character: (id) => useCharacter(id),
   newFromPicture: () => newCharacterFromImage(),
+  newFromVideo: () => openWizard('new'),
+  editClips: () => openWizard('edit'),
   importCharacter: () => importCharacter(),
   openCharacters: () => shell.openPath(CHARACTERS_DIR),
   shown: (on) => setVisible(!!on),

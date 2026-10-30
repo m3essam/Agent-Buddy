@@ -2,7 +2,6 @@
 // the speech bubble used to answer permission prompts and questions.
 
 const DEFAULT_HEIGHT = 220;  // on-screen character height when character.json doesn't set one
-const WALK_RANGE = 36;       // px the character strolls each way while running tools
 const ONE_SHOT_MS = 1400;    // how long a picture character's hello / done / error move lasts
 const $ = (s) => document.querySelector(s);
 const avatar = $('#avatar'), bubble = $('#bubble'), badge = $('#badge'), statusText = $('#status span');
@@ -42,7 +41,8 @@ function chime() {
 // States: idle, thinking, checking, running, waiting (looping) and hello, done, error (once).
 // A "frames" character has a clip of frames per state; a missing state falls back to idle.
 // An "image" character is one picture that CSS moves per state (style.css, body.image).
-let srcs = [], clips = {}, base = 'idle', oneShot = null, clipName = null, fi = 0, dir = 1, oneShotTimer = null;
+let srcs = [], clips = {}, base = 'idle', oneShot = null, oneShotTimer = null;
+const player = clipPlayer(); // clips.js
 let character = null;
 window.pet.character().then((c) => {
   character = c;
@@ -74,29 +74,16 @@ function playOnce(name) {
     document.body.dataset.once = name;
     clearTimeout(oneShotTimer);
     oneShotTimer = setTimeout(() => delete document.body.dataset.once, ONE_SHOT_MS);
-  } else if (clips[name]) { oneShot = name; clipName = null; }
+  } else if (clips[name]) { oneShot = name; player.reset(); }
 }
 
 function tick() {
-  const name = oneShot || base;
-  const clip = clips[name] || clips.idle;
-  const [a, b] = clip.frames;
-  if (name !== clipName) { clipName = name; fi = a; dir = 1; }
-  else if (clip.mode === 'pingpong') {
-    if (fi + dir > b || fi + dir < a) dir = -dir;
-    fi += dir;
-  } else if (fi < b) fi++;
-  else if (clip.mode === 'loop') fi = a;
-  else if (oneShot) { oneShot = null; return tick(); } // one-shot finished
-  avatar.src = srcs[fi].src;
-  avatar.style.marginLeft = (clip.stroll ? strollOffset(clip, fi) : 0) + 'px';
-}
-
-// A clip with "stroll": <frame> walks right until that frame, then back left.
-function strollOffset(clip, f) {
-  const [r, end] = clip.frames, turn = clip.stroll;
-  return f < turn ? -WALK_RANGE + (2 * WALK_RANGE * (f - r)) / Math.max(1, turn - 1 - r)
-    : WALK_RANGE - (2 * WALK_RANGE * (f - turn)) / Math.max(1, end - turn);
+  const step = player.next(clips[oneShot || base] || clips.idle);
+  if (step.finished) { // a one-shot ended (or a looping state has a "once" clip: hold its last frame)
+    if (oneShot) { oneShot = null; return tick(); }
+  }
+  avatar.src = srcs[step.frame].src;
+  avatar.style.marginLeft = step.offset + 'px';
 }
 
 // Tray icon: a square around the character's head, found from the top of the opaque pixels.
@@ -241,7 +228,7 @@ function renderBubble(ps) {
   if (state.pending.length) {
     const p = state.pending[0];
     key = 'ask:' + p.id + ':' + state.pending.length;
-    build = () => (p.kind === 'permission' ? permissionView(p) : questionView(p));
+    build = () => ({ permission: permissionView, mirror: mirrorView }[p.kind] || questionView)(p);
   } else if (showList) {
     key = 'list:' + JSON.stringify(state.sessions.filter((s) => s.state !== 'idle' || s.unread).map((s) => [s.id, s.state, s.detail, s.title, s.unread]));
     build = listView;
@@ -319,7 +306,7 @@ function questionView(p) {
     p.questions.forEach((q, i) => {
       const vals = [...picks[i]];
       if (others[i].trim()) vals.push(others[i].trim());
-      answers[q.question] = vals.join(', ');
+      answers[q.question] = q.multiSelect ? vals : vals.join(', ');
     });
     window.pet.answer(p.id, { type: 'answers', answers });
   }
@@ -334,13 +321,27 @@ function questionView(p) {
   ];
 }
 
+// A question Claude is asking in its own dialog: shown here so you notice, answered in Claude.
+function mirrorView(p) {
+  return [
+    who(p),
+    ...p.questions.map((q) => el('div', { className: 'q' },
+      q.header ? el('div', { className: 'hdr', textContent: q.header }) : null,
+      el('h4', { textContent: q.question }),
+      el('ul', { className: 'opts' }, ...(q.options || []).map((o) => el('li', { textContent: o.label }))))),
+    el('div', { className: 'row' },
+      el('button', { className: 'primary', textContent: 'Answer in Claude', onclick: () => window.pet.answer(p.id, { type: 'open' }) }),
+      el('button', { className: 'link', textContent: 'Dismiss', onclick: () => window.pet.answer(p.id, { type: 'dismiss' }) })),
+  ];
+}
+
 function doneView(s) {
   return [
     el('div', { className: 'who' }, el('b', { textContent: s.title || 'Claude' }), 'Done'),
     el('p', { textContent: s.detail }),
     el('div', { className: 'row' },
       s.hostId ? el('button', { className: 'primary', textContent: 'Open session', onclick: () => window.pet.openSession(s.id) }) : null,
-      el('button', { className: 'link', textContent: 'Mark as read', onclick: () => window.pet.markRead(s.id) })),
+      el('button', { className: 'link', textContent: 'Dismiss', onclick: () => window.pet.markRead(s.id) })),
   ];
 }
 
@@ -349,14 +350,18 @@ function listView() {
   const shown = new Set([...need, ...fresh].map((s) => s.id));
   const busy = state.sessions.filter((s) => s.state === 'working' && !shown.has(s.id));
   if (!need.length && !fresh.length && !busy.length) return [el('p', { textContent: 'Nothing running, and nothing needs you.' })];
-  // Clicking a row opens that session in Claude.
+  // Clicking a row opens that session in Claude; an unread row can also be dismissed with its ×.
+  const dismiss = (s) => el('button', { className: 'x', title: 'Dismiss', textContent: '×',
+    onclick: (e) => { e.stopPropagation(); window.pet.markRead(s.id); } });
   const row = (s, kind) => el('div', { className: 'sess', title: 'Open in Claude', onclick: () => { showList = false; window.pet.openSession(s.id); } },
     el('i', { className: kind }),
-    el('div', {}, el('b', { textContent: s.title || 'Untitled session' }), el('span', { textContent: s.detail || '' })));
+    el('div', {}, el('b', { textContent: s.title || 'Untitled session' }), el('span', { textContent: s.detail || '' })),
+    kind === 'done' ? dismiss(s) : null);
   return [
     need.length ? el('div', { className: 'group', textContent: 'Needs you' }) : null,
     ...need.map((s) => row(s, 'waiting')),
-    fresh.length ? el('div', { className: 'group', textContent: 'Unread' }) : null,
+    fresh.length ? el('div', { className: 'group' }, 'Unread',
+      el('button', { className: 'link', textContent: 'Clear all', onclick: () => fresh.forEach((s) => window.pet.markRead(s.id)) })) : null,
     ...fresh.map((s) => row(s, 'done')),
     busy.length ? el('div', { className: 'group', textContent: 'Working' }) : null,
     ...busy.map((s) => row(s, 'working')),

@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data: buddy:; media-src blob:; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src 'self' blob:; connect-src 'self' buddy: blob: data:; style-src 'self' 'unsafe-inline'">
+<title>New character from a video</title>
+<link rel="stylesheet" href="video-wizard.css">
+</head>
+<body>
+  <header>
+    <h1 id="title">New character from a video</h1>
+    <ol id="steps"><li data-step="cut">1 · Cut out</li><li data-step="states">2 · States</li></ol>
+  </header>
+
+  <!-- Step 1: choose the video and how its background is removed -->
+  <main id="cut">
+    <div class="stage">
+      <div class="checker"><canvas id="cut-preview"></canvas><p id="cut-empty">Choose a video of your character to start.</p></div>
+      <label class="scrub"><span>Preview at</span><input type="range" id="scrub" min="0" max="1" step="0.01" value="0" disabled><output id="scrub-value"></output></label>
+    </div>
+    <aside>
+      <section>
+        <h2>Video</h2>
+        <button id="pick" class="primary">Choose a video…</button>
+        <p id="video-info" class="muted">One person or character, 5–30 seconds, doing each move one after another: standing, thinking, walking, waving, celebrating…</p>
+      </section>
+      <section>
+        <h2>Background</h2>
+        <label class="radio"><input type="radio" name="mode" value="colour" checked><span><b>Plain colour</b><small>A wall, a backdrop or a generated character on a flat colour.</small></span></label>
+        <label class="radio"><input type="radio" name="mode" value="green"><span><b>Green screen</b><small>Filmed against a green screen.</small></span></label>
+        <label class="radio"><input type="radio" name="mode" value="ai"><span><b>Any background (AI)</b><small>Finds a real person anywhere. Slower; works on people, not cartoons.</small></span></label>
+        <label class="field" id="tolerance-field"><span>Tolerance</span><input type="range" id="tolerance" min="0" max="1" step="0.01" value="0.2"></label>
+      </section>
+      <section>
+        <h2>Trim</h2>
+        <div class="trim">
+          <label><span>From</span><input type="number" id="trim-start" min="0" step="0.1" value="0" disabled> s</label>
+          <label><span>To</span><input type="number" id="trim-end" min="0" step="0.1" value="0" disabled> s</label>
+        </div>
+      </section>
+      <div class="go">
+        <div id="progress" hidden><div class="bar"><i></i></div><span id="progress-text"></span></div>
+        <p id="cut-error" class="error" hidden></p>
+        <div class="row"><button id="cancel" hidden>Cancel</button><button id="extract" class="primary" disabled>Cut out frames</button></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Step 2: mark which frames play for each state -->
+  <main id="states" hidden>
+    <div class="top">
+      <div class="player">
+        <div class="checker"><img id="player" alt=""></div>
+        <p class="muted"><b id="player-state"></b> <span id="player-range"></span></p>
+      </div>
+      <div class="help">
+        <h2>Pick frames for each state</h2>
+        <p class="muted">Each row is a state. Drag a bar to move it, drag its ends to resize it, or click an empty row to add one. Click a row to preview it on the left. Only <b>Idle</b> is required; a state without frames uses Idle.</p>
+        <div class="row"><button id="even">Split evenly</button></div>
+      </div>
+    </div>
+    <div id="timeline">
+      <div id="lanes-head"></div>
+      <div id="scroller"><div id="strip"></div><div id="lanes"></div></div>
+    </div>
+    <footer>
+      <label class="field"><span>Name</span><input type="text" id="name" maxlength="40" placeholder="My buddy"></label>
+      <label class="field"><span>Size on screen</span><input type="range" id="height" min="140" max="320" step="1" value="220"><output id="height-value"></output></label>
+      <span class="grow"></span>
+      <button id="back">Back</button>
+      <button id="save" class="primary">Save character</button>
+    </footer>
+  </main>
+
+  <script src="extract-core.js"></script>
+  <script src="clips.js"></script>
+  <script type="module" src="video-wizard.js"></script>
+</body>
+</html>

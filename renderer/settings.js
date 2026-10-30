@@ -31,6 +31,7 @@ function render(s) {
     b.onclick = () => act('character', c.id);
     return b;
   }));
+  $('#edit-clips').hidden = !s.characters.some((c) => c.id === s.character && c.kind === 'frames');
 
   $('#scale').value = Math.round(s.settings.scale * 100);
   $('#scale-value').textContent = Math.round(s.settings.scale * 100) + '%';
@@ -59,6 +60,8 @@ $('#reset-position').onclick = () => act('resetPosition');
 $('#hooks-install').onclick = () => act('installHooks');
 $('#hooks-remove').onclick = () => act('removeHooks');
 $('#new-picture').onclick = () => act('newFromPicture');
+$('#new-video').onclick = () => act('newFromVideo');
+$('#edit-clips').onclick = () => act('editClips');
 $('#import').onclick = () => act('importCharacter');
 $('#open-folder').onclick = () => act('openCharacters');
 
