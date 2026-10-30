@@ -26,6 +26,13 @@ jobs:
           v=$(node -p "require('./package.json').version")
           [ "v$v" = "${GITHUB_REF_NAME}" ] || { echo "Tag ${GITHUB_REF_NAME} does not match package.json version $v"; exit 1; }
       - run: npm ci
+      # electron-builder uploads its files in parallel; if the release doesn't exist yet, each upload
+      # can create its own. Creating it first gives them one release to share.
+      - name: Create the release
+        shell: bash
+        run: gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "${GITHUB_REF_NAME#v}" --notes "Download **Agent-Buddy-Setup-${GITHUB_REF_NAME#v}.exe** below and run it. Installed copies update themselves."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and publish
         run: npx electron-builder --win nsis --publish always
         env:
