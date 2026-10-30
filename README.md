@@ -56,7 +56,8 @@ it's off, the buddy tells you Claude needs your OK and you answer in Claude.
 
 ## Your character
 
-Agent Buddy ships with a placeholder robot. Make your own from **Character** in the menu or in Settings:
+Agent Buddy ships with **Default buddy**, an animated bobblehead made from an AI video with the
+[prompt below](docs/video-prompt.md). Make your own from **Character** in the menu or in Settings:
 
 ### From a video (recommended)
 
@@ -73,7 +74,7 @@ Agent Buddy ships with a placeholder robot. Make your own from **Character** in 
    - **Plain colour** for a wall, a backdrop or a generated character on a flat colour;
    - **Green screen**;
    - **Any background (AI)**, which finds a real person in an ordinary video using an on-device model.
-3. Check the preview, then **Cut out frames**.
+3. Check the preview (tick **Remove floor shadow** if a shadow is left under the feet), then **Cut out frames**.
 4. On the timeline, drag a bar for each state (idle, thinking, checking, running, waiting, hello, done, error) and
    watch the preview. Only *Idle* is required.
 5. Name it and **Save character**. Use **Edit clips…** any time to re-time it.

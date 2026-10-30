@@ -1,0 +1,32 @@
+{
+  "name": "Buddy",
+  "kind": "frames",
+  "height": 230,
+  "frames": {
+    "count": 27,
+    "fps": 10,
+    "file": "frames/f###.webp"
+  },
+  "clips": {
+    "idle": {
+      "frames": [0, 6],
+      "mode": "pingpong"
+    },
+    "running": {
+      "frames": [7, 15],
+      "mode": "loop"
+    },
+    "hello": {
+      "frames": [16, 18],
+      "mode": "once"
+    },
+    "waiting": {
+      "frames": [16, 18],
+      "mode": "pingpong"
+    },
+    "done": {
+      "frames": [19, 26],
+      "mode": "once"
+    }
+  }
+}

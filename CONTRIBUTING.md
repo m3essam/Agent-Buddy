@@ -40,7 +40,8 @@ screenshots. `AGENT_BUDDY_TEST_VIDEO=<path>` makes the video wizard skip its fil
 | `renderer/settings.*` | The settings window |
 | `renderer/video-wizard.*` | The "New character from a video" wizard |
 | `renderer/extract-core.js` | Background removal (plain colour, green screen, AI mask helpers), shared with `tools/extract.html` |
-| `assets/placeholder/` | The built-in robot |
+| `assets/default/` | The built-in default character (frames + `character.json`) |
+| `assets/placeholder/buddy.svg` | The robot drawn into the app icon (`npm run icon`) |
 | `assets/vision/` | The person-segmentation model the wizard's AI mode uses (MediaPipe selfie segmenter, Apache-2.0) |
 
 The hook flow, events and character format are described in the [README](README.md) and [docs/characters.md](docs/characters.md).

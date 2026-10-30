@@ -8,6 +8,9 @@ There are two kinds:
 - **Frames**: a sequence of images with a *clip* (a range of frames) for each state. Make one with
   **Character → New character from a video…**, which cuts the frames out of a video and lets you mark the clips.
 
+The built-in **Default buddy**, a bobblehead in a navy suit, is a frames character made the same way from an AI
+video. Its files are in [`assets/default/`](../assets/default) if you want an example.
+
 To share a character, zip its folder. Someone else can unzip it and use **Character → Import a character folder…**.
 
 ## Making a good video
@@ -15,7 +18,8 @@ To share a character, zip its folder. Someone else can unzip it and use **Charac
 **Using an AI video tool?** [video-prompt.md](video-prompt.md) has a ready-made prompt for Gemini (Veo), Seedance
 and similar tools, plus which move maps to which state.
 
-- **One character, filmed whole**, from head to feet, without walking out of the frame.
+- **One character, filmed whole**, from head to feet, without walking out of the frame. AI tools sometimes cut to a
+  different person partway through; leave those parts out of every state's bar (or trim them away).
 - **Do each move one after another**, a few seconds each, roughly in this order:
   standing → thinking → looking something up → walking → waiting → waving → celebrating → a "whoops".
   The wizard's first guess splits the video evenly in that order. You can adjust every range afterwards,
@@ -31,8 +35,10 @@ and similar tools, plus which move maps to which state.
 ## The video wizard
 
 1. **Cut out**: choose the video and a background option. Move *Preview at* to check a few moments, and raise
-   *Tolerance* if bits of background remain (or lower it if parts of the character disappear). Trim to the part
-   you want, then **Cut out frames**.
+   *Tolerance* if bits of background remain (or lower it if parts of the character disappear). If a floor
+   shadow stays, often between the legs, tick **Remove floor shadow**: the AI person finder clears background-coloured
+   areas that aren't part of the character, while the plain-colour cut keeps its crisp edges. Trim to the part you
+   want, then **Cut out frames**.
 2. **States**: each row is a state. Drag a bar to move it, drag its ends to resize it, and click an empty row to
    add a bar there. Click a row to preview it. Choose how each clip plays: *Loop*, *Back and forth* or *Once*.
    On *Running*, tick *walk* to make the character stroll left and right while Claude runs tools.

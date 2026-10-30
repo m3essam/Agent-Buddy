@@ -86,6 +86,20 @@ function applyMask(img, mask, edge = 0.25) {
   return img;
 }
 
+// Plain colour plus the person mask: a floor shadow, or background trapped between the legs, is close to
+// the background colour but outside the person, so it goes; the figure keeps the plain-colour cut's crisp
+// edges, and dark details the mask misses (shoes, fingers) stay because they are far from the background.
+function clearShadows(img, mask, bg, maxDiff = 130) {
+  const d = img.data;
+  for (let p = 0; p < mask.length; p++) {
+    const i = p * 4;
+    if (mask[p] >= 0.35 || !d[i + 3]) continue;
+    const diff = Math.abs(d[i] - bg[0]) + Math.abs(d[i + 1] - bg[1]) + Math.abs(d[i + 2] - bg[2]);
+    if (diff < maxDiff) d[i + 3] = Math.round(d[i + 3] * Math.max(0, (mask[p] - 0.15) / 0.2));
+  }
+  return img;
+}
+
 // Box around the opaque pixels, or null when the frame is empty.
 function alphaBounds(img, threshold = 40) {
   const { data: d, width: W, height: H } = img;

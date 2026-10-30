@@ -17,7 +17,7 @@ const LEGACY_DIR = path.join(os.homedir(), '.claude-pet');
 const TOKEN_FILE = path.join(DATA_DIR, 'token');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const CHARACTERS_DIR = path.join(DATA_DIR, 'characters');
-const PLACEHOLDER_DIR = path.join(__dirname, 'assets', 'placeholder');
+const DEFAULT_DIR = path.join(__dirname, 'assets', 'default');
 const ASK_TIMEOUT_MS = 55_000; // hook timeout is 60s; fall back to Claude's own dialog before that
 const WIN_W = 320, WIN_H = 560; // tall enough for a question bubble above a tall character; the empty part is click-through
 
@@ -350,7 +350,7 @@ ipcMain.handle('get-state', () => snapshot());
 // ---------- characters ----------
 // A character is a folder with character.json (see README) plus its image or frames.
 // The active one lives in ~/.agent-buddy/characters/<id>; with none chosen, the
-// built-in placeholder in assets/placeholder is shown.
+// built-in default character in assets/default is shown.
 
 function readCharacter(dir) {
   try {
@@ -368,7 +368,7 @@ function listCharacters() {
 
 function activeCharacterDir() {
   const dir = config.character && path.join(CHARACTERS_DIR, config.character);
-  return dir && readCharacter(dir) ? dir : PLACEHOLDER_DIR;
+  return dir && readCharacter(dir) ? dir : DEFAULT_DIR;
 }
 
 // Character files are served as buddy://character/<file> from the active folder only.
@@ -490,7 +490,7 @@ ipcMain.handle('wizard:save', async (_e, { character, frames }) => {
     fs.mkdirSync(path.join(dir, 'frames'), { recursive: true });
     await Promise.all(frames.map((buf, i) => fs.promises.writeFile(path.join(dir, 'frames', `f${String(i).padStart(3, '0')}.webp`), Buffer.from(buf))));
     character.frames = { ...character.frames, count: frames.length, file: 'frames/f###.webp' };
-  } else if (dir === PLACEHOLDER_DIR) return false;
+  } else if (dir === DEFAULT_DIR) return false;
   const prev = readCharacter(dir) || {};
   fs.writeFileSync(path.join(dir, 'character.json'), JSON.stringify({ ...prev, ...character, kind: 'frames' }, null, 2));
   useCharacter(id);
@@ -683,12 +683,12 @@ function characterMenu() {
   const active = activeCharacterDir();
   const pick = (id, label, dir) => ({ label, type: 'radio', checked: active === dir, click: () => useCharacter(id) });
   return [
-    pick(null, 'Default buddy', PLACEHOLDER_DIR),
+    pick(null, 'Default buddy', DEFAULT_DIR),
     ...listCharacters().map((c) => pick(c.id, c.info.name || c.id, path.join(CHARACTERS_DIR, c.id))),
     { type: 'separator' },
     { label: 'New character from a video…', click: () => openWizard('new') },
     { label: 'New character from a picture…', click: () => newCharacterFromImage() },
-    { label: 'Edit clips…', enabled: readCharacter(active)?.kind === 'frames' && active !== PLACEHOLDER_DIR, click: () => openWizard('edit') },
+    { label: 'Edit clips…', enabled: readCharacter(active)?.kind === 'frames' && active !== DEFAULT_DIR, click: () => openWizard('edit') },
     { label: 'Import a character folder…', click: () => importCharacter() },
     { label: 'Open characters folder', click: () => shell.openPath(CHARACTERS_DIR) },
   ];
@@ -728,8 +728,8 @@ function rebuildTray() {
 function settingsState() {
   return {
     settings: settings(),
-    characters: [{ id: null, name: 'Default buddy' }, ...listCharacters().map((c) => ({ id: c.id, name: c.info.name || c.id, kind: c.info.kind }))],
-    character: activeCharacterDir() === PLACEHOLDER_DIR ? null : config.character,
+    characters: [{ id: null, name: 'Default buddy' }, ...(devDemoOnly ? [] : listCharacters()).map((c) => ({ id: c.id, name: c.info.name || c.id, kind: c.info.kind }))],
+    character: activeCharacterDir() === DEFAULT_DIR ? null : config.character,
     shown: !config.hidden,
     startWithWindows: startsWithWindows(),
     hooks: hooks.status(token),

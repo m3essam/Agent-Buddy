@@ -99,7 +99,12 @@ async function cutFrame(t) {
   wx.clearRect(0, 0, W, H);
   wx.drawImage(video, 0, 0, W, H);
   const im = wx.getImageData(0, 0, W, H), tol = Number($('#tolerance').value), m = bgMode();
-  if (m === 'colour') keyColour(im, bg || (bg = cornerBackground(im)), tol);
+  if (m === 'colour') {
+    if (!bg) bg = cornerBackground(im);
+    const mask = $('#shadow').checked ? await personMask(work) : null; // before keying: the AI sees the original
+    keyColour(im, bg, tol);
+    if (mask) clearShadows(im, mask, bg);
+  }
   else if (m === 'green') keyGreen(im, tol);
   else applyMask(im, await personMask(work));
   wx.putImageData(im, 0, 0);
@@ -135,8 +140,15 @@ async function cutBackground() {
   bg = cornerBackground(wx.getImageData(0, 0, W, H));
 }
 
-document.querySelectorAll('input[name=mode]').forEach((r) => { r.onchange = () => { $('#tolerance-field').hidden = bgMode() === 'ai'; showCutError(''); previewCut(); }; });
+document.querySelectorAll('input[name=mode]').forEach((r) => {
+  r.onchange = () => {
+    $('#tolerance-field').hidden = bgMode() === 'ai';
+    $('#shadow-field').hidden = bgMode() !== 'colour';
+    showCutError(''); previewCut();
+  };
+});
 $('#tolerance').oninput = previewCut;
+$('#shadow').onchange = previewCut;
 $('#scrub').oninput = previewCut;
 $('#trim-start').onchange = () => { bg = null; previewCut(); };
 

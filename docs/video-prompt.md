@@ -38,7 +38,10 @@ Style & Technical Constraints:
 - **Short clips:** many tools make 5–10 second clips. Generate a few (for example states 1–3, 4–6 and 7–9), then join
   them in any video editor, or the Windows Clipchamp app, before opening the result in the wizard.
 - **Background:** in the wizard, keep **Plain colour**. The off-white background cuts out cleanly. If bits of
-  background remain around the edges, raise *Tolerance* a little.
+  background remain around the edges, raise *Tolerance* a little. Tools often add a soft floor shadow despite the
+  prompt; tick **Remove floor shadow** to clear it.
+- **One person only:** some tools cut to a different character partway through. Leave those frames out of every
+  state's bar.
 - **Same person every time:** if a clip drifts from your face or outfit, regenerate it rather than mixing in a
   different-looking one. The buddy switches between clips constantly, so any difference shows.
 
