@@ -12,25 +12,19 @@ frame, and one clearly separate move for each state.
 Copy it as is, then change the details in the last line (blazer, beard, glasses) to match your photo.
 
 ```text
-Turn the uploaded person into a photorealistic 3D bobblehead caricature avatar with an oversized, expressive head, a compact body, and realistic textures, centered against a solid, plain, clean off-white background with no text or UI labels.
-Animate the character cycling video through distinct, isolated assistant states using stepped, low frame rate animation (animating on twos/threes at 8–12 fps, stop-motion / choppy sprite playback). Avoid smooth easing, fluid interpolation, or soft blending between actions; movements within each state should feel stepped and snappy, holding key poses briefly:
+Photorealistic 3D bobblehead caricature avatar based on the reference image, featuring an oversized expressive head, compact body, and realistic textures, centered against a solid, plain, clean chroma key green screen background with no text or UI labels. The character cycles through distinct, isolated assistant states using stepped, low frame rate animation (animating on twos/threes at 8–12 fps, stop-motion / choppy sprite playback, avoiding smooth easing, fluid interpolation, or soft blending). Each state is held for an extended duration with a clear, deliberate pause between transitions to provide ample time for cutting individual frame sequences:
 
-1. Relaxed: Standing centered, hands tucked comfortably inside blazer pockets, subtle stepped breathing idle.
-2. Moving right: Full profile facing right, brisk stepped running-in-place animation.
-3. Moving left: Full profile facing left, matching the stepped running-in-place animation.
-4. Greeting: Facing forward, one hand raised giving a snappy, friendly waving gesture.
-5. Celebration: Cheerful celebratory hop/bounce with bent knees, elbows tucked, and pumped fists.
-6. Error / Disappointed: Hands in pockets, head tilted slightly down with a somber, frowning expression.
-7. Waiting / Offering: Standing upright, one open hand extended forward toward the camera in an inviting gesture.
-8. Thinking: One arm crossed, hand resting under the chin, head tilted up with eyes directed sideways in thought.
-9. Inspecting: Neutral standing posture, hands in pockets, looking directly forward with a calm, focused gaze.
+1. Relaxed: Standing centered with an extended holding period, hands tucked comfortably inside blazer pockets, subtle stepped breathing idle.
+2. Moving right: Full profile facing right, brisk stepped running-in-place animation held in a distinct block.
+3. Moving left: Full profile facing left, matching the stepped running-in-place animation held clearly.
+4. Greeting: Facing forward, one hand raised giving a snappy, friendly waving gesture held as an isolated pose.
+5. Celebration: Cheerful celebratory hop/bounce with bent knees, elbows tucked, and pumped fists, held as a distinct segment.
+6. Error / Disappointed: Hands in pockets, head tilted slightly down with a somber, frowning expression held steadily.
+7. Waiting / Offering: Standing upright, one open hand extended forward toward the camera in an inviting gesture held as a distinct pose.
+8. Thinking: One arm crossed, hand resting under the chin, head tilted up with eyes directed sideways in thought, held for an extended pause.
+9. Inspecting: Neutral standing posture, hands in pockets, looking directly forward with a calm, focused gaze held steadily at the end.
 
-Style & Technical Constraints:
-
-* Animation Feel: Snappy, low-fps, stepped keyframe animation (no smooth motion blur, no tweening transitions).
-* Framing: Vertical full-body framing (9:16 or portrait), completely showing the entire character from top of head to shoes with generous padding at the top and bottom.
-* Aesthetics: Photo-puppet cutout aesthetic, sharp silhouette edges against a flat background, consistent studio lighting, no background text, and no floor shadows.
-* Identity: Maintain strict facial fidelity, skin tone, beard grooming, glasses style, and wardrobe details from the reference image across all frames.
+Vertical full-body portrait framing (9:16) completely showing the entire character from top of head to shoes with generous padding at the top and bottom, photo-puppet cutout aesthetic, sharp silhouette edges against the green screen background, consistent studio lighting, no floor shadows, and strict adherence to the facial fidelity, bald head, dark glasses, beard, and wardrobe details from the reference image across all frames.
 ```
 
 ## Tips
