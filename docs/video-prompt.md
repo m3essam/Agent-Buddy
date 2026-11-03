@@ -12,19 +12,20 @@ frame, and one clearly separate move for each state.
 Copy it as is, then change the details in the last line (blazer, beard, glasses) to match your photo.
 
 ```text
-Photorealistic 3D bobblehead caricature avatar based on the reference image, featuring an oversized expressive head, compact body, and realistic textures, centered against a solid, plain, clean chroma key green screen background with no text or UI labels. The character cycles through distinct, isolated assistant states using stepped, low frame rate animation (animating on twos/threes at 8–12 fps, stop-motion / choppy sprite playback, avoiding smooth easing, fluid interpolation, or soft blending). Each state is held for an extended duration with a clear, deliberate pause between transitions to provide ample time for cutting individual frame sequences:
+Traditional stop-motion puppet animation (shot at 8-12 fps with choppy, stepped keyframes and zero smooth interpolation), featuring a photorealistic 3D bobblehead caricature avatar based strictly on the reference image. Oversized expressive head, compact body, realistic textures, centered against a solid chroma key green screen with no text, UI labels, or floor shadows.
 
-1. Relaxed: Standing centered with an extended holding period, hands tucked comfortably inside blazer pockets, subtle stepped breathing idle.
-2. Moving right: Full profile facing right, brisk stepped running-in-place animation held in a distinct block.
-3. Moving left: Full profile facing left, matching the stepped running-in-place animation held clearly.
-4. Greeting: Facing forward, one hand raised giving a snappy, friendly waving gesture held as an isolated pose.
-5. Celebration: Cheerful celebratory hop/bounce with bent knees, elbows tucked, and pumped fists, held as a distinct segment.
-6. Error / Disappointed: Hands in pockets, head tilted slightly down with a somber, frowning expression held steadily.
-7. Waiting / Offering: Standing upright, one open hand extended forward toward the camera in an inviting gesture held as a distinct pose.
-8. Thinking: One arm crossed, hand resting under the chin, head tilted up with eyes directed sideways in thought, held for an extended pause.
-9. Inspecting: Neutral standing posture, hands in pockets, looking directly forward with a calm, focused gaze held steadily at the end.
+The character must cycle through the following 8 states in this exact order, holding each pose firmly with an extended pause between transitions for easy frame cutting:
 
-Vertical full-body portrait framing (9:16) completely showing the entire character from top of head to shoes with generous padding at the top and bottom, photo-puppet cutout aesthetic, sharp silhouette edges against the green screen background, consistent studio lighting, no floor shadows, and strict adherence to the facial fidelity, bald head, dark glasses, beard, and wardrobe details from the reference image across all frames.
+1. Idle: Centered neutral posture, subtle stepped breathing.
+2. Thinking: One arm crossed, hand under chin, head tilted up with eyes sideways.
+3. Running Right: Full profile facing right, choppy running-in-place.
+4. Running Left: Full profile facing left, choppy running-in-place.
+5. Waiting / Offering: Upright stance, one open hand extended forward invitingly.
+6. Greeting: Facing forward, one hand raised in a snappy wave.
+7. Celebrating: Cheerful hop/bounce with bent knees, tucked elbows, and pumped fists.
+8. Error: Hands in pockets, head tilted down with a somber frown.
+
+Vertical 9:16 portrait framing showing the full character from head to shoes with generous padding, sharp cutout silhouettes, consistent studio lighting, and strict fidelity to the reference image's facial features, glasses, hair, beard, and clothing across all frames.
 ```
 
 ## Tips
